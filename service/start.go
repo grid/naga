@@ -25,12 +25,17 @@ func (s *Service) StartForTest() func() {
 	return s.Stop
 }
 
-// Provide sets up the service synchronoously and then starts it in a goroutine.
+// Provide sets up the service synchronously and then starts it in a goroutine.
 // This method is intended as an adapter to Wire.
-func (s *Service) Provide() (func(), error) {
+func (s *Service) Provide(customize func () error) (func(), error) {
 	err := s.setup()
 	if err != nil {
 		return nil, err
+	}
+	if customize!=nil {
+		if err := customize(); err != nil {
+			return nil, err
+		}
 	}
 	go s.start()
 	s.started.Wait()
